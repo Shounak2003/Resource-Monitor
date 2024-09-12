@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Manager</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        #chartContainer {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+        .status-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .status-text {
+            font-weight: 500;
+            margin-right: 10px;
+        }
+        .status-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Resource Manager</h1>
+        <div id="chartContainer">
+            <canvas id="resourceChart"></canvas>
+        </div>
+        <div class="status-container">
+            <span class="status-text">System Status:</span>
+            <div id="statusBox" class="status-box"></div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('resourceChart').getContext('2d');
+            
+            // Generate 24 data points (one for each hour)
+            const data = Array.from({length: 24}, () => Math.floor(Math.random() * 20));
+            const labels = Array.from({length: 24}, (_, i) => `${i}:00`);
+
+            // Calculate the maximum value in the data
+            const maxValue = Math.max(...data);
+
+            let chart;
+            let systemCondition = true; // Initial condition
+
+            function updateChart() {
+                if (chart) {
+                    chart.destroy();
+                }
+
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'CPU Usage',
+                            data: data,
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: maxValue + 3,
+                                title: {
+                                    display: true,
+                                    text: 'Usage (%)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Resource Usage Over Time',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            annotation: {
+                                annotations: {
+                                    line1: {
+                                        type: 'line',
+                                        yMin: systemCondition ? maxValue + 2 : maxValue - 3,
+                                        yMax: systemCondition ? maxValue + 2 : maxValue - 3,
+                                        borderColor: systemCondition ? 'red' : 'orange',
+                                        borderWidth: 2,
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateStatusBox() {
+                const statusBox = document.getElementById('statusBox');
+                statusBox.style.backgroundColor = systemCondition ? 'green' : 'red';
+            }
+
+            function toggleCondition() {
+                systemCondition = !systemCondition;
+                updateChart();
+                updateStatusBox();
+            }
+
+            // Initial chart and status update
+            updateChart();
+            updateStatusBox();
+
+            // Toggle condition every 5 seconds for demonstration
+           // setInterval(toggleCondition, 5000);
+        });
+    </script>
+</body>
+</html>
